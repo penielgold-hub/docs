@@ -7,6 +7,7 @@
     "check:nav-coverage": "node scripts/check-nav-coverage.mjs",
     "check:redirects-and-anchors": "node scripts/check-redirects-and-anchors.mjs",
     "test:redirects-and-anchors": "node --test scripts/check-redirects-and-anchors.test.mjs",
+    "test:preview-redirect": "node scripts/check-preview-redirect.mjs",
     "check:stellar-testnet": "tsx scripts/check-stellar-testnet-snippets.ts",
     "generate:stellar-reference": "tsx scripts/generate-stellar-reference.ts",
     "check:stellar-reference": "tsx scripts/generate-stellar-reference.ts --check --allow-missing",
