@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -122,6 +124,15 @@ jobs:
 
       - name: Check extended snippets (Rust / Python / shell / JSON / TOML / YAML)
         run: pnpm run check:snippets-extended
+
+      - name: Check redirects and anchors
+        env:
+          DOCS_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DOCS_DIFF_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: pnpm run check:redirects-and-anchors
+
+      - name: Test redirects and anchors check
+        run: pnpm run test:redirects-and-anchors
 
   stellar-testnet-snippets:
     name: Stellar snippet testnet validation
