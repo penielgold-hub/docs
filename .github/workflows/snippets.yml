@@ -78,6 +78,15 @@ jobs:
       - name: Check contract registry
         run: pnpm run check:contract-registry
 
+      - name: Check redirects and anchors
+        env:
+          DOCS_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DOCS_DIFF_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: pnpm run check:redirects-and-anchors
+
+      - name: Test redirects and anchors check
+        run: pnpm run test:redirects-and-anchors
+
   check-snippets-extended:
     name: Compile Rust / Python / shell / config snippets
     runs-on: ubuntu-latest
@@ -124,15 +133,6 @@ jobs:
 
       - name: Check extended snippets (Rust / Python / shell / JSON / TOML / YAML)
         run: pnpm run check:snippets-extended
-
-      - name: Check redirects and anchors
-        env:
-          DOCS_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-          DOCS_DIFF_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: pnpm run check:redirects-and-anchors
-
-      - name: Test redirects and anchors check
-        run: pnpm run test:redirects-and-anchors
 
   stellar-testnet-snippets:
     name: Stellar snippet testnet validation
