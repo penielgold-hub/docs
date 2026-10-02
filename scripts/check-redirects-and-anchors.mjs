@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = process.cwd();
 const extensions = new Set([".md", ".mdx"]);
 const shippedDirs = ["api-reference", "architecture", "concepts", "contracts", "docs", "guides", "reference", "sdk"];
+const excludedLinks = new Map([["docs/i18n.md", new Set(["/guides/my-guide"])]]);
 
 async function main() {
   const docs = await readDocs(root);
@@ -29,10 +30,10 @@ async function main() {
   for (const file of scanFiles) {
     const content = await readFile(path.join(root, file), "utf8");
     for (const link of extractLinks(content)) {
+      if (isExcludedLink(file, link)) continue;
       const parsed = resolveLink(file, link, pageByUrl);
       if (parsed.external) continue;
       const stale = validateRenamedPageLink(file, link, changedRenames);
-      const moved = changedRenames.find(([oldPath]) => fileToUrl(oldPath) === parsed.url);
       errors.push(...validateLinkAnchor(file, link, pageByUrl, pageAnchors));
       if (stale) errors.push(stale);
     }
@@ -52,6 +53,10 @@ export function getScanFiles(pageFiles, changedPages, changedRenames = []) {
     for (const file of pageFiles) scanFiles.add(file);
   }
   return scanFiles;
+}
+
+export function isExcludedLink(source, link) {
+  return excludedLinks.get(source)?.has(link) ?? false;
 }
 
 export function fileToUrl(file) {

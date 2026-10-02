@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { extractAnchors, extractLinks, fileToUrl, getScanFiles, parseRenameRecords, resolveLink, validateLinkAnchor, validateRedirects, validateRenamedPageLink } from "./check-redirects-and-anchors.mjs";
+import { extractAnchors, extractLinks, fileToUrl, getScanFiles, isExcludedLink, parseRenameRecords, resolveLink, validateLinkAnchor, validateRedirects, validateRenamedPageLink } from "./check-redirects-and-anchors.mjs";
 
 test("only actual Git rename records for Markdown pages are selected", () => {
   assert.deepEqual(parseRenameRecords("R100\tREADME.mdx\tintroduction.mdx\nM\tdocs.json\nR090\told.txt\tnew.txt\nA\tnew.mdx\n"), [["README.mdx", "introduction.mdx"]]);
@@ -59,4 +59,10 @@ test("scans unchanged inbound pages when documentation changes", () => {
   assert.ok(scanFiles.has("target.mdx"));
   assert.ok(scanFiles.has("source.mdx"));
   assert.equal(scanFiles.size, 2);
+});
+
+test("excludes only the i18n guide's intentional starter-page link example", () => {
+  assert.equal(isExcludedLink("docs/i18n.md", "/guides/my-guide"), true);
+  assert.equal(isExcludedLink("docs/i18n.md", "/guides/my-guide.es"), false);
+  assert.equal(isExcludedLink("guides/example.mdx", "/guides/my-guide"), false);
 });
