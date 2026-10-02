@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { extractAnchors, extractLinks, fileToUrl, parseRenameRecords, resolveLink, validateLinkAnchor, validateRedirects, validateRenamedPageLink } from "./check-redirects-and-anchors.mjs";
+import { extractAnchors, extractLinks, fileToUrl, getScanFiles, parseRenameRecords, resolveLink, validateLinkAnchor, validateRedirects, validateRenamedPageLink } from "./check-redirects-and-anchors.mjs";
 
 test("only actual Git rename records for Markdown pages are selected", () => {
   assert.deepEqual(parseRenameRecords("R100\tREADME.mdx\tintroduction.mdx\nM\tdocs.json\nR090\told.txt\tnew.txt\nA\tnew.mdx\n"), [["README.mdx", "introduction.mdx"]]);
@@ -49,4 +49,14 @@ test("validates internal link anchors and reports stale fragments", () => {
 test("reports inbound links that still use a renamed page URL", () => {
   const links = extractLinks("[section](/README#section)");
   assert.match(validateRenamedPageLink("current.mdx", links[0], [["README.mdx", "introduction.mdx"]]), /still uses renamed page URL \/README; update it to \/introduction/);
+});
+
+test("scans unchanged inbound pages when documentation changes", () => {
+  const pageFiles = ["target.mdx", "source.mdx"];
+  const changedPages = new Set(["target.mdx"]);
+  const scanFiles = getScanFiles(pageFiles, changedPages);
+
+  assert.ok(scanFiles.has("target.mdx"));
+  assert.ok(scanFiles.has("source.mdx"));
+  assert.equal(scanFiles.size, 2);
 });

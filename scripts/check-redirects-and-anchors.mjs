@@ -25,8 +25,7 @@ async function main() {
 
   const pageAnchors = new Map();
   for (const file of pageFiles) pageAnchors.set(file, extractAnchors(await readFile(path.join(root, file), "utf8")));
-  const scanFiles = new Set(changedPages);
-  if (changedRenames.length) for (const file of pageFiles) scanFiles.add(file);
+  const scanFiles = getScanFiles(pageFiles, changedPages, changedRenames);
   for (const file of scanFiles) {
     const content = await readFile(path.join(root, file), "utf8");
     for (const link of extractLinks(content)) {
@@ -34,7 +33,6 @@ async function main() {
       if (parsed.external) continue;
       const stale = validateRenamedPageLink(file, link, changedRenames);
       const moved = changedRenames.find(([oldPath]) => fileToUrl(oldPath) === parsed.url);
-      if (!changedPages.has(file) && !moved) continue;
       errors.push(...validateLinkAnchor(file, link, pageByUrl, pageAnchors));
       if (stale) errors.push(stale);
     }
@@ -46,6 +44,14 @@ async function main() {
   } else {
     console.log(`Redirect and anchor check passed: ${changedRenames.length} Git rename(s), ${pageFiles.length} pages, ${redirectList.length} redirect(s).`);
   }
+}
+
+export function getScanFiles(pageFiles, changedPages, changedRenames = []) {
+  const scanFiles = changedPages.size ? new Set(pageFiles) : new Set();
+  if (changedRenames.length) {
+    for (const file of pageFiles) scanFiles.add(file);
+  }
+  return scanFiles;
 }
 
 export function fileToUrl(file) {
